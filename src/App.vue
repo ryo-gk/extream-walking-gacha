@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ASelect from './components/ASelect.vue'
 import { SelectGacha } from './Gacha'
 import { data } from 'virtual:vite-plugin-stations'
@@ -48,6 +48,9 @@ const moneyOptions = [
   { label: '10000', value: 10000 }
 ]
 
+const moneyOptionsMin = computed(() => moneyOptions.filter(o => o.value < moneyMax.value))
+const moneyOptionsMax = computed(() => moneyOptions.filter(o => o.value > moneyMin.value))
+
 const stayingTimeOptions = [
   { label: '30ふん', value: 30 },
   { label: '1じかん', value: 60 },
@@ -62,6 +65,9 @@ const stayingTimeOptions = [
   { label: '5じかん30ふん', value: 330 },
   { label: '6じかん', value: 360 },
 ]
+
+const stayingTimeOptionsMin = computed(() => stayingTimeOptions.filter(o => o.value < stayingTimeMax.value))
+const stayingTimeOptionsMax = computed(() => stayingTimeOptions.filter(o => o.value > stayingTimeMin.value))
 
 function rollGacha() {
   const staionGacha = new SelectGacha({
@@ -148,16 +154,16 @@ function provideProgress() {
         しょじきんを入力してください
       </p>
       <div class="input-container">
-        <ASelect class="select" :options="moneyOptions" v-model="moneyMin" /> から
-        <ASelect class="select" :options="moneyOptions" v-model="moneyMax" /> のあいだ
+        <ASelect class="select" :options="moneyOptionsMin" v-model="moneyMin" /> から
+        <ASelect class="select" :options="moneyOptionsMax" v-model="moneyMax" /> のあいだ
       </div>
 
       <p class="nes-balloon from-left baloon">
         たいざい時間を入力してください
       </p>
       <div class="input-container">
-        <ASelect class="select" :options="stayingTimeOptions" v-model="stayingTimeMin" /> から
-        <ASelect class="select" :options="stayingTimeOptions" v-model="stayingTimeMax" /> のあいだ
+        <ASelect class="select" :options="stayingTimeOptionsMin" v-model="stayingTimeMin" /> から
+        <ASelect class="select" :options="stayingTimeOptionsMax" v-model="stayingTimeMax" /> のあいだ
       </div>
 
       <div>
