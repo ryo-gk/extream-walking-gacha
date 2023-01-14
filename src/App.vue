@@ -144,14 +144,14 @@ function provideProgress() {
     <div class="form nes-container with-title">
       <p class="title">設定</p>
       <p class="nes-balloon from-left baloon">
-        えきを入力してください
+        さんぽするちいきを入力してください
       </p>
       <div class="input-container">
         <ASelect class="select" :options="prefectureOptions" v-model="prefecture" />
       </div>
 
       <p class="nes-balloon from-left baloon">
-        しょじきんを入力してください
+        お金のはんいを入力してください
       </p>
       <div class="input-container">
         <ASelect class="select" :options="moneyOptionsMin" v-model="moneyMin" /> から
@@ -159,7 +159,7 @@ function provideProgress() {
       </div>
 
       <p class="nes-balloon from-left baloon">
-        たいざい時間を入力してください
+        たいざい時間のはんいを入力してください
       </p>
       <div class="input-container">
         <ASelect class="select" :options="stayingTimeOptionsMin" v-model="stayingTimeMin" /> から
@@ -181,7 +181,7 @@ function provideProgress() {
           <div v-else class="result">{{ resultStation }}</div>
         </div>
 
-        <h3 class="label">しょじきん</h3>
+        <h3 class="label">お金</h3>
         <div class="result-box">
           <progress v-if="progressResultMoney < 100" class="progress nes-progress is-primary" :value="progressResultMoney" max="100"></progress>
           <div v-else class="result">{{ resultMoney }}円</div>
