@@ -202,6 +202,30 @@ function resetProgressResult() {
         </div>
       </div>
     </div>
+
+    <div class="credit-container">
+      <p class="label"># 制作</p>
+      <div class="record">
+        <p>
+          きかく　タピ山
+          <a
+            href="https://twitter.com/tapi_yama"
+            target="_blank" rel="noopener noreferrer"
+          >
+            <i class="nes-icon twitter sns-icon"></i>
+          </a>
+        </p>
+        <p>
+          かいはつ　Greko
+          <a
+            href="https://twitter.com/ryo_gk55"
+            target="_blank" rel="noopener noreferrer"
+          >
+            <i class="nes-icon twitter sns-icon"></i>
+          </a>
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -211,7 +235,7 @@ h2 { font-size: 24px; margin-bottom: 12px; }
 h3 { font-size: 16px; }
 
 .App {
-  padding: 64px 0 96px;
+  padding: 64px 0 40px;
   background-color: #ffffff;
 }
 
@@ -239,7 +263,7 @@ h3 { font-size: 16px; }
   }
 }
 
-.title-container, .form, .result-container {
+.title-container, .form, .result-container, .credit-container {
   width: 300px;
   margin: 0 auto;
   background-color: #ffffff;
@@ -278,6 +302,16 @@ h3 { font-size: 16px; }
 
 .result-box {
   min-height: 40px;
+}
+
+.credit-container {
+  margin-top: 56px;
+  text-align: center;
+}
+
+.sns-icon {
+  margin: 0;
+  transform: scale(1.3);
 }
 
 .form > .baloon {
