@@ -70,6 +70,8 @@ const stayingTimeOptionsMin = computed(() => stayingTimeOptions.filter(o => o.va
 const stayingTimeOptionsMax = computed(() => stayingTimeOptions.filter(o => o.value > stayingTimeMin.value))
 
 function rollGacha() {
+  resetProgressResult()
+
   const staionGacha = new SelectGacha({
     options: getStationList(data, prefecture.value)
   })
@@ -133,6 +135,12 @@ function provideProgress() {
       intervalIdStayingTime && clearInterval(intervalIdStayingTime)
     }
   }
+}
+
+function resetProgressResult() {
+  progressResultStation.value = 0
+  progressResultMoney.value = 0
+  progressResultStayingTime.value = 0
 }
 </script>
 
@@ -204,7 +212,7 @@ h3 { font-size: 16px; }
 
 .App {
   padding: 64px 0 96px;
-  background-color: #8cc8f0;
+  background-color: #ffffff;
 }
 
 .label {
@@ -265,7 +273,7 @@ h3 { font-size: 16px; }
 }
 
 .result-box > .progress {
-  height: 24px;
+  height: 28px;
 }
 
 .result-box {
