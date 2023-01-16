@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import TwitterIcon from './icons/TwitterIcon.vue'
 
 const props = defineProps<{
   label: string,
