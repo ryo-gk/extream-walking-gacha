@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { data } from 'virtual:vite-plugin-stations'
 import AButton from './components/AButton.vue'
 import ASelect from './components/ASelect.vue'
+import ARadio from './components/ARadio.vue'
 import ATwitterShareButton from './components/ATwitterShareButton.vue'
 import { SelectGacha } from './Gacha'
 
@@ -13,35 +14,49 @@ const moneyMin = ref(1000)
 const moneyMax = ref(3000)
 const stayingTimeMin = ref(120)
 const stayingTimeMax = ref(240)
+const prohibitedCard = ref('')
+const useProhibitedCard = ref(true)
 
 const resultStation = ref('???')
 const resultMoney = ref('???')
 const resultStayingTime = ref('???')
+const resultProhibitedCard = ref('???')
 
 const resultForTweet = computed(() => {
-  return `【エクストリームさんぽガチャ 結果】%0a${resultStation.value}駅しゅうへんで%0a${resultStayingTime.value}、%0a${resultMoney.value}円ですごす。`
+  const message = `【エクストリームさんぽガチャ 結果】%0a${resultStation.value}駅しゅうへんで%0a${resultStayingTime.value}、%0a${resultMoney.value}円ですごす。`
+
+  return message + (useProhibitedCard.value ? `%0a※ただし${resultProhibitedCard.value}` : '')
 })
 
 const progressResultStation = ref(0)
 const progressResultMoney = ref(0)
 const progressResultStayingTime = ref(0)
+const progressResultProhibitedCard = ref(0)
 
 const doingGacha = computed(() => {
-  // Be careful, this logic depends on that the gacha starts from of Station to of StayingTime.
-  return progressResultStation.value > 0 && progressResultStayingTime.value < 100
+  // Be careful, this logic depends on that the gacha starts with Station and end with ProhibitedCard.
+  return progressResultStation.value > 0
+    && progressResultProhibitedCard.value < 100
 })
 
 const doneGacha = computed(() => {
   return progressResultStation.value >= 100
     && progressResultMoney.value >= 100
     && progressResultStayingTime.value >= 100
+    && progressResultProhibitedCard.value >= 100
 })
+
+const moneyOptionsMin = computed(() => moneyOptions.filter(o => o.value < moneyMax.value))
+const moneyOptionsMax = computed(() => moneyOptions.filter(o => o.value > moneyMin.value))
+const stayingTimeOptionsMin = computed(() => stayingTimeOptions.filter(o => o.value < stayingTimeMax.value))
+const stayingTimeOptionsMax = computed(() => stayingTimeOptions.filter(o => o.value > stayingTimeMin.value))
 
 const prefectureOptions = [
   { label: 'とうきょう', value: 'tokyo' },
   { label: 'かながわ', value: 'kanagawa' },
   { label: 'おおさか', value: 'osaka' }
 ]
+
 const moneyOptions = [
   { label: '500', value: 500 },
   { label: '1000', value: 1000 },
@@ -65,9 +80,6 @@ const moneyOptions = [
   { label: '10000', value: 10000 }
 ]
 
-const moneyOptionsMin = computed(() => moneyOptions.filter(o => o.value < moneyMax.value))
-const moneyOptionsMax = computed(() => moneyOptions.filter(o => o.value > moneyMin.value))
-
 const stayingTimeOptions = [
   { label: '30ふん', value: 30 },
   { label: '1じかん', value: 60 },
@@ -83,8 +95,24 @@ const stayingTimeOptions = [
   { label: '6じかん', value: 360 },
 ]
 
-const stayingTimeOptionsMin = computed(() => stayingTimeOptions.filter(o => o.value < stayingTimeMax.value))
-const stayingTimeOptionsMax = computed(() => stayingTimeOptions.filter(o => o.value > stayingTimeMin.value))
+const prohibitedCardOptions = [
+  { label: '公園禁止', value: 1 },
+  { label: 'コンビニ禁止', value: 2 },
+  { label: '読書禁止', value: 3 },
+  { label: '宗教施設禁止', value: 4 },
+  { label: '坂禁止', value: 5 },
+  { label: '駅前禁止', value: 6 },
+  { label: '橋禁止', value: 7 },
+  { label: '商店街禁止', value: 8 },
+  { label: '飲食店入店禁止', value: 9 },
+  { label: '食べ歩き禁止', value: 10 },
+  { label: '公共施設禁止', value: 11 }
+]
+
+const useProhibitedCardOptions = [
+  { label: 'はい', value: true },
+  { label: 'いいえ', value: false }
+]
 
 function rollGacha() {
   resetProgressResult()
@@ -98,10 +126,14 @@ function rollGacha() {
   const stayingTimeGacha = new SelectGacha({
     options: stayingTimeOptions.filter(({value}) => value >= stayingTimeMin.value && value <= stayingTimeMax.value).map(option => option.label)
   })
+  const prohibitedCardGacha = new SelectGacha({
+    options: prohibitedCardOptions.map(option => option.label)
+  })
 
   resultStation.value = staionGacha.roll()
   resultMoney.value = moneyGacha.roll()
   resultStayingTime.value = stayingTimeGacha.roll()
+  resultProhibitedCard.value = prohibitedCardGacha.roll()
 
   provideProgress()
 }
@@ -120,6 +152,7 @@ function provideProgress() {
   let intervalIdStation: NodeJS.Timer | null
   let intervalIdMoney: NodeJS.Timer | null
   let intervalIdStayingTime: NodeJS.Timer | null
+  let intervalIdProhibitedCard: NodeJS.Timer | null
 
   intervalIdStation = setInterval(() => {
     if (progressResultStation.value < 100) { 
@@ -136,16 +169,34 @@ function provideProgress() {
   intervalIdStayingTime = setInterval(() => {
     if (progressResultStation.value >= 100 && progressResultMoney.value >= 100 && progressResultStayingTime.value < 100) { 
       progressResultStayingTime.value += 1
-    } else { 
+    } else if (!useProhibitedCard.value) {
       clearIntervalAll()
     }
   }, 50)
 
+  if (useProhibitedCard.value) {
+    intervalIdProhibitedCard = setInterval(() => {
+      if (
+        progressResultStation.value >= 100
+        && progressResultMoney.value >= 100
+        && progressResultStayingTime.value >= 100
+        && progressResultProhibitedCard.value < 100
+      ) { 
+        progressResultProhibitedCard.value += 1
+      } else {
+        clearIntervalAll()
+      }
+    }, 30)
+  } else {
+    progressResultProhibitedCard.value = 100
+  }
+  
   function clearIntervalAll() {
     if (doneGacha.value) {
       intervalIdStation && clearInterval(intervalIdStation)
       intervalIdMoney && clearInterval(intervalIdMoney)
       intervalIdStayingTime && clearInterval(intervalIdStayingTime)
+      intervalIdProhibitedCard && clearInterval(intervalIdProhibitedCard)
     }
   }
 }
@@ -154,6 +205,7 @@ function resetProgressResult() {
   progressResultStation.value = 0
   progressResultMoney.value = 0
   progressResultStayingTime.value = 0
+  progressResultProhibitedCard.value = 0
 }
 </script>
 
@@ -187,6 +239,13 @@ function resetProgressResult() {
         <ASelect class="select" :options="stayingTimeOptionsMax" v-model="stayingTimeMax" /> のあいだ
       </div>
 
+      <p class="nes-balloon from-left baloon">
+        封印かーどを使いますか？
+      </p>
+      <div class="input-container">
+        <ARadio class="radio" :options="useProhibitedCardOptions" v-model="useProhibitedCard" />
+      </div>
+
       <div>
         <AButton 
           class="roll-btn"
@@ -218,6 +277,14 @@ function resetProgressResult() {
           <progress v-if="progressResultStayingTime < 100" class="progress nes-progress is-primary" :value="progressResultStayingTime" max="100"></progress>
           <div v-else class="result">{{ resultStayingTime }}</div>
         </div>
+
+        <template v-if="useProhibitedCard">
+          <h3 class="label">封印かーど</h3>
+          <div class="result-box">
+            <progress v-if="progressResultProhibitedCard < 100" class="progress nes-progress is-primary" :value="progressResultProhibitedCard" max="100"></progress>
+            <div v-else class="result">{{ resultProhibitedCard }}</div>
+          </div>               
+        </template>
       </div>
 
       <div class="actions">
