@@ -397,7 +397,7 @@ h3 { font-size: 16px; }
 }
 
 .result-box {
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .actions {
