@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import ASelect from './components/ASelect.vue'
-import { SelectGacha } from './Gacha'
 import { data } from 'virtual:vite-plugin-stations'
+import AButton from './components/AButton.vue'
+import ASelect from './components/ASelect.vue'
+import ATwitterShareButton from './components/ATwitterShareButton.vue'
+import { SelectGacha } from './Gacha'
 
 type Prefecture = 'tokyo' | 'kanagawa' | 'osaka'
 
@@ -16,9 +18,24 @@ const resultStation = ref('???')
 const resultMoney = ref('???')
 const resultStayingTime = ref('???')
 
+const resultForTweet = computed(() => {
+  return `【エクストリームさんぽガチャ 結果】%0a${resultStation.value}駅しゅうへんで%0a${resultStayingTime.value}、%0a${resultMoney.value}円ですごす。`
+})
+
 const progressResultStation = ref(0)
 const progressResultMoney = ref(0)
 const progressResultStayingTime = ref(0)
+
+const doingGacha = computed(() => {
+  // Be careful, this logic depends on that the gacha starts from of Station to of StayingTime.
+  return progressResultStation.value > 0 && progressResultStayingTime.value < 100
+})
+
+const doneGacha = computed(() => {
+  return progressResultStation.value >= 100
+    && progressResultMoney.value >= 100
+    && progressResultStayingTime.value >= 100
+})
 
 const prefectureOptions = [
   { label: 'とうきょう', value: 'tokyo' },
@@ -125,11 +142,7 @@ function provideProgress() {
   }, 50)
 
   function clearIntervalAll() {
-    if (
-      progressResultStation.value >= 100
-      && progressResultMoney.value >= 100
-      && progressResultStayingTime.value >= 100
-    ) {
+    if (doneGacha.value) {
       intervalIdStation && clearInterval(intervalIdStation)
       intervalIdMoney && clearInterval(intervalIdMoney)
       intervalIdStayingTime && clearInterval(intervalIdStayingTime)
@@ -175,7 +188,12 @@ function resetProgressResult() {
       </div>
 
       <div>
-        <button class="roll-btn nes-btn is-primary" @click="rollGacha">ガチャを回す</button>
+        <AButton 
+          class="roll-btn"
+          label="ガチャを回す"
+          :disabled="doingGacha"
+          @clicked="rollGacha"
+        />
       </div>
     </div>
 
@@ -200,6 +218,17 @@ function resetProgressResult() {
           <progress v-if="progressResultStayingTime < 100" class="progress nes-progress is-primary" :value="progressResultStayingTime" max="100"></progress>
           <div v-else class="result">{{ resultStayingTime }}</div>
         </div>
+      </div>
+
+      <div class="actions">
+        <ATwitterShareButton
+          class="share-btn"
+          label="けっかをツイートする"
+          :text="resultForTweet"
+          url="https://www.xsanpo.com/"
+          hashtags="エクストリームさんぽ"
+          :disabled="!doneGacha"
+        />
       </div>
     </div>
 
@@ -302,6 +331,15 @@ h3 { font-size: 16px; }
 
 .result-box {
   min-height: 40px;
+}
+
+.actions {
+  display: flex;
+}
+
+.share-btn {
+  flex-grow: 1;
+  margin-top: 40px;
 }
 
 .credit-container {
