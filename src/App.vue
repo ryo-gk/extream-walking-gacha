@@ -138,14 +138,14 @@ function rollGacha() {
   provideProgress()
 }
 
-function getStationList(data: any, prefecture: Prefecture) {
+function getStationList(data: any, prefecture: Prefecture): string[] {
   // Tokyo: 13, Kanagawa: 14, Osaka: 27
   const pref_cd = 
       prefecture === 'tokyo' ? 13
     : prefecture === 'kanagawa' ? 14
     : 27
 
-  return data[pref_cd].map((d: any) => d.station_name)
+  return Array.from(new Set(data[pref_cd].map((d: any) => d.station_name)))
 }
 
 function provideProgress() {
